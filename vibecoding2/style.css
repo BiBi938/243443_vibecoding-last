@@ -414,6 +414,12 @@ body {
   font-size: 1rem;
 }
 
+/* 입력 내용을 보고 카테고리를 자동으로 골랐을 때 */
+#category-select.auto-picked {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px var(--accent-strong);
+}
+
 #add-btn {
   flex: 0 0 auto;
   padding: 10px 16px;
@@ -720,6 +726,7 @@ body {
 
 /* 6. 완료 항목 지우기, 내보내기, 가져오기: 조용한 모양 */
 #clear-completed-btn,
+#clear-all-btn,
 #export-btn,
 #import-btn {
   padding: 8px 14px;
@@ -739,8 +746,11 @@ body {
   gap: 8px;
 }
 
-#clear-completed-btn {
+.list-footer .clear-row {
   justify-self: start;
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .list-footer .io-row {
@@ -757,9 +767,19 @@ body {
     grid-column: 1 / -1;
     grid-row: 1;
   }
+
+  /* 지우기 버튼 두 개는 한 줄을 다 쓰고, 내보내기·가져오기는 그 아래 오른쪽에 둔다. */
+  .list-footer .clear-row {
+    grid-column: 1 / -1;
+  }
+
+  .list-footer .io-row {
+    grid-column: 1 / -1;
+  }
 }
 
 #clear-completed-btn:hover:not(:disabled),
+#clear-all-btn:hover:not(:disabled),
 #export-btn:hover,
 #import-btn:hover,
 #theme-toggle-btn:hover {
@@ -767,7 +787,8 @@ body {
   border-color: var(--muted);
 }
 
-#clear-completed-btn:disabled {
+#clear-completed-btn:disabled,
+#clear-all-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

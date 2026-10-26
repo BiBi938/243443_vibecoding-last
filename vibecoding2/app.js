@@ -5,6 +5,20 @@
   var CATEGORY_LABELS = { work: '업무', personal: '개인', study: '공부' };
   var CATEGORY_ORDER = ['work', 'personal', 'study'];
 
+  // 입력 내용에 이 낱말이 들어 있으면 해당 카테고리로 자동 분류한다.
+  // 여러 카테고리 낱말이 섞이면 더 많이 맞은 쪽을 고르고, 같으면 고르지 않는다.
+  var CATEGORY_KEYWORDS = {
+    work: ['업무', '회의', '미팅', '보고서', '보고', '기획', '프로젝트', '발표', '팀장', '상사', '동료',
+      '회사', '출근', '출장', '야근', '거래처', '고객', '클라이언트', '업체', '계약', '견적', '제안서',
+      '결재', '메일', '이메일'],
+    personal: ['장보기', '마트', '세탁', '빨래', '청소', '설거지', '요리', '병원', '약국', '운동', '헬스',
+      '요가', '산책', '은행', '택배', '약속', '생일', '선물', '가족', '엄마', '아빠', '친구', '미용실',
+      '쇼핑', '여행', '예약', '저녁', '점심'],
+    study: ['공부', '과제', '숙제', '시험', '중간고사', '기말', '퀴즈', '강의', '인강', '수업', '학원',
+      '복습', '예습', '암기', '단어', '영어', '토익', '자격증', '문제집', '독서', '책', '논문',
+      '레포트', '리포트', '스터디']
+  };
+
   // 상태: 할 일 배열, 입력창에서 직전에 고른 카테고리, 현재 수정 중인 항목 id, 현재 탭, 테마
   var todos = [];
   var lastCategory = 'work';
@@ -385,6 +399,7 @@
     clearBtn.disabled = !todos.some(function (t) {
       return t.done;
     });
+    document.getElementById('clear-all-btn').disabled = todos.length === 0;
 
     renderList();
     renderTabs();
@@ -442,6 +457,9 @@
 
     var categorySelectEl = document.getElementById('category-select');
     categorySelectEl.value = filter === 'all' ? lastCategory : filter;
+    // 탭이 카테고리 선택을 새로 정했으므로, 전체 탭이면 입력 중인 내용으로 다시 자동 분류한다.
+    categoryPickedByUser = false;
+    applyAutoCategory();
 
     render();
   }
@@ -530,6 +548,28 @@
     if (!dateEl) return;
     var now = new Date();
     dateEl.textContent = now.getFullYear() + '년 ' + (now.getMonth() + 1) + '월 ' + now.getDate() + '일';
+  }
+
+  // 내용에 들어 있는 키워드 수를 카테고리별로 세어 가장 많은 카테고리를 돌려준다.
+  // 맞는 낱말이 없거나 두 카테고리가 같은 수로 맞으면 null을 돌려준다.
+  function guessCategory(text) {
+    var normalized = text.toLowerCase();
+    var best = null;
+    var bestScore = 0;
+    var tied = false;
+    CATEGORY_ORDER.forEach(function (cat) {
+      var score = CATEGORY_KEYWORDS[cat].filter(function (word) {
+        return normalized.indexOf(word) !== -1;
+      }).length;
+      if (score > bestScore) {
+        best = cat;
+        bestScore = score;
+        tied = false;
+      } else if (score > 0 && score === bestScore) {
+        tied = true;
+      }
+    });
+    return tied ? null : best;
   }
 
   function generateId() {
@@ -797,6 +837,24 @@
     }
   }
 
+  // 지금 보고 있는 탭과 상관없이 모든 항목을 지운다. 되돌릴 수 없으므로 한 번 확인을 받는다.
+  function clearAll() {
+    if (todos.length === 0) return;
+    if (!window.confirm('할 일 ' + todos.length + '개를 모두 지울까요? 되돌릴 수 없어요.')) return;
+
+    todos = [];
+    editingId = null;
+    currentPage = 0;
+    // 지우기 전에 삭제한 항목을 빈 목록에 되살리면 안 되므로 되돌리기 알림을 닫는다.
+    clearPendingDelete();
+    document.getElementById('undo-toast').hidden = true;
+    save();
+    render();
+
+    // 버튼이 비활성화되면서 포커스를 잃으므로 입력창으로 옮긴다.
+    document.getElementById('todo-input').focus();
+  }
+
   function startEdit(id) {
     if (editingId === id) return;
     editingId = id;
@@ -818,12 +876,35 @@
     focusItemControl(id, 'todo-edit-btn');
   }
 
+  // 사용자가 이번 항목을 입력하는 동안 카테고리를 직접 골랐는지. 직접 골랐다면
+  // 자동 분류가 그 선택을 덮어쓰지 않는다. 항목을 추가하면 다시 false가 된다.
+  var categoryPickedByUser = false;
+
+  // 입력 중인 내용을 보고 카테고리 선택을 자동으로 맞춘다. 전체 탭에서만 동작한다.
+  // 특정 카테고리 탭에서는 그 탭의 카테고리로 넣는 것이 정해진 동작이기 때문이다.
+  // 맞는 키워드가 없으면 원래 값(직전에 고른 카테고리)으로 되돌린다.
+  function applyAutoCategory() {
+    var inputEl = document.getElementById('todo-input');
+    var categorySelectEl = document.getElementById('category-select');
+    if (categoryPickedByUser || currentFilter !== 'all') {
+      categorySelectEl.classList.remove('auto-picked');
+      return;
+    }
+    var guessed = guessCategory(inputEl.value);
+    categorySelectEl.value = guessed || lastCategory;
+    categorySelectEl.classList.toggle('auto-picked', !!guessed);
+    categorySelectEl.title = guessed ? '내용을 보고 자동으로 골랐어요' : '';
+  }
+
   // 입력창과 카테고리 선택값을 읽어 addTodo를 호출하고, 입력창을 비운 뒤 초점을 유지한다.
   function handleAddFromInput() {
     var inputEl = document.getElementById('todo-input');
     var categorySelectEl = document.getElementById('category-select');
     addTodo(inputEl.value, categorySelectEl.value);
     inputEl.value = '';
+    categoryPickedByUser = false;
+    categorySelectEl.classList.remove('auto-picked');
+    categorySelectEl.title = '';
     inputEl.focus();
   }
 
@@ -874,6 +955,14 @@
       if (e.key === 'Enter') {
         handleAddFromInput();
       }
+    });
+
+    inputEl.addEventListener('input', applyAutoCategory);
+
+    categorySelectEl.addEventListener('change', function () {
+      categoryPickedByUser = true;
+      categorySelectEl.classList.remove('auto-picked');
+      categorySelectEl.title = '';
     });
 
     listEl.addEventListener('change', function (e) {
@@ -1060,6 +1149,7 @@
     });
 
     clearBtn.addEventListener('click', clearCompleted);
+    document.getElementById('clear-all-btn').addEventListener('click', clearAll);
     undoBtn.addEventListener('click', undoDelete);
   });
 })();
