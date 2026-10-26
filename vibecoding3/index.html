@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QUIZ SHOW</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arvo:wght@700&family=Yeon+Sung&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 무대 조명: 스포트라이트 빛줄기와 타이틀 뒤 후광 (장식) -->
+  <div class="stage-lights" aria-hidden="true"></div>
+  <main class="app">
+
+    <!-- 메뉴 탭 (시작·틀린 문제·순위 화면에서만 보임) -->
+    <nav id="app-nav" class="app-nav" aria-label="Menu">
+      <button class="nav-tab" type="button" data-screen="start">QUIZ</button>
+      <button class="nav-tab" type="button" data-screen="wrong">WRONG ANSWERS <span id="wrong-badge" class="nav-badge">0</span></button>
+      <button class="nav-tab" type="button" data-screen="ranking">RANKING</button>
+    </nav>
+
+    <!-- 시작 화면 -->
+    <section id="screen-start" class="screen screen-stage" aria-labelledby="start-title">
+      <h1 id="start-title" class="marquee" tabindex="-1">
+        <span class="visually-hidden">QUIZ SHOW</span>
+        <svg class="sign" viewBox="0 0 600 270" aria-hidden="true" focusable="false">
+          <defs>
+            <filter id="text-glow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+            <filter id="bulb-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>
+            <radialGradient id="bulb-on" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#fff6cf"/><stop offset=".55" stop-color="#f4c94a"/><stop offset="1" stop-color="#c8922a"/></radialGradient>
+
+            <linearGradient id="sign-frame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8c0a1f"/><stop offset="1" stop-color="#4f0611"/></linearGradient>
+            <pattern id="letter-bulbs" width="15" height="15" patternUnits="userSpaceOnUse"><circle cx="7.5" cy="7.5" r="2" fill="#ffe88f"/></pattern>
+          </defs>
+          <polygon points="300.0,6.0 594.0,98.0 528.0,264.0 72.0,264.0 6.0,98.0" fill="url(#sign-frame)" stroke="#2a0409" stroke-width="3" stroke-linejoin="round"/>
+          <polygon points="300.0,37.4 554.2,117.0 507.6,234.0 92.4,234.0 45.8,117.0" fill="#1c0d06" stroke="#f4c94a" stroke-width="1.5" stroke-linejoin="round"/>
+          <g class="bulbs bulbs-a"><circle class="halo" cx="300.0" cy="21.7" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="300.0" cy="21.7" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="368.5" cy="43.2" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="368.5" cy="43.2" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="437.0" cy="64.6" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="437.0" cy="64.6" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="505.6" cy="86.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="505.6" cy="86.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="574.1" cy="107.5" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="574.1" cy="107.5" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="546.0" cy="178.2" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="546.0" cy="178.2" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="517.8" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="517.8" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="445.2" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="445.2" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="372.6" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="372.6" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="300.0" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="300.0" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="227.4" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="227.4" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="154.8" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="154.8" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="82.2" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="82.2" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="54.0" cy="178.2" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="54.0" cy="178.2" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="25.9" cy="107.5" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="25.9" cy="107.5" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="94.4" cy="86.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="94.4" cy="86.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="163.0" cy="64.6" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="163.0" cy="64.6" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="231.5" cy="43.2" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="231.5" cy="43.2" r="6.5" fill="url(#bulb-on)"/></g><g class="bulbs bulbs-b"><circle class="halo" cx="334.3" cy="32.4" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="334.3" cy="32.4" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="402.8" cy="53.9" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="402.8" cy="53.9" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="471.3" cy="75.3" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="471.3" cy="75.3" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="539.8" cy="96.8" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="539.8" cy="96.8" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="560.0" cy="142.9" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="560.0" cy="142.9" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="531.9" cy="213.6" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="531.9" cy="213.6" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="481.5" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="481.5" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="408.9" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="408.9" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="336.3" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="336.3" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="263.7" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="263.7" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="191.1" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="191.1" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="118.5" cy="249.0" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="118.5" cy="249.0" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="68.1" cy="213.6" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="68.1" cy="213.6" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="40.0" cy="142.9" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="40.0" cy="142.9" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="60.2" cy="96.8" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="60.2" cy="96.8" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="128.7" cy="75.3" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="128.7" cy="75.3" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="197.2" cy="53.9" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="197.2" cy="53.9" r="6.5" fill="url(#bulb-on)"/><circle class="halo" cx="265.7" cy="32.4" r="11" fill="#ffcf4a" filter="url(#bulb-glow)"/><circle cx="265.7" cy="32.4" r="6.5" fill="url(#bulb-on)"/></g>
+          <g class="sign-text" font-family="'Arvo', 'Rockwell', 'Georgia', serif" font-weight="700" font-size="82" text-anchor="middle">
+            <text x="300" y="194" textLength="420" lengthAdjust="spacingAndGlyphs" fill="#ffb800" opacity=".6" filter="url(#text-glow)">QUIZ SHOW</text>
+            <text x="300" y="194" textLength="420" lengthAdjust="spacingAndGlyphs" fill="#ffc414" stroke="#6e0b19" stroke-width="3" stroke-linejoin="round" paint-order="stroke">QUIZ SHOW</text>
+            <text x="300" y="194" textLength="420" lengthAdjust="spacingAndGlyphs" fill="url(#letter-bulbs)">QUIZ SHOW</text>
+          </g>
+        </svg>
+      </h1>
+      <p class="rules">QUIZ SHOW에 오신 걸 환영합니다!<br>과목 하나를 골라 원하는 만큼 도전하시거나, 한국사부터 일반상식까지 모든 과목을 쭉 달려 보세요!</p>
+      <p id="start-error" class="hint" hidden>앗, 무대 뒤에 문제가 생겼어요! 문제 데이터를 고칠 때까지 잠시만 기다려 주세요! (콘솔 확인)</p>
+
+      <div id="subject-buttons" class="subject-grid" role="group" aria-label="Choose a subject"></div>
+
+      <div id="count-panel" class="count-panel" hidden>
+        <div class="count-head">
+          <span id="count-label">QUESTIONS</span>
+          <span class="count-value">
+            <button id="count-display" class="count-display" type="button" title="Click to type a number">10</button>
+            <input id="count-input" class="count-input" type="number" inputmode="numeric" min="1" aria-label="Number of questions" hidden>
+            <span class="count-unit">QUESTIONS</span>
+          </span>
+        </div>
+        <input id="count-slider" class="count-slider" type="range" min="1" max="10" value="10" aria-label="Number of questions">
+        <div class="count-scale"><span>1</span><span id="count-max">10</span></div>
+        <button id="subject-start-button" class="btn btn-dark" type="button">PLAY</button>
+      </div>
+
+      <button id="all-start-button" class="btn btn-primary btn-all" type="button">
+        <span>ALL SUBJECTS</span>
+        <small id="all-summary" class="btn-sub"></small>
+      </button>
+    </section>
+
+    <!-- 퀴즈 화면 -->
+    <section id="screen-quiz" class="screen" aria-labelledby="quiz-question" hidden>
+      <div class="quiz-top">
+        <span id="quiz-sign" class="quiz-sign" aria-hidden="true">QUESTION 01</span>
+        <button id="quit-button" class="btn btn-quiet" type="button">QUIT</button>
+      </div>
+      <div id="subject-tabs" class="subject-tabs" role="group" aria-label="Switch subject" hidden></div>
+
+      <header class="quiz-header">
+        <div class="quiz-meta">
+          <span id="quiz-category" class="badge">한국사</span>
+          <span id="quiz-counter">1 / 10</span>
+          <span id="quiz-score">SCORE 0</span>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
+          <div id="quiz-progress-bar" class="progress-bar"></div>
+        </div>
+      </header>
+
+      <div id="quiz-transition" class="transition" role="status" hidden>
+        <p id="quiz-transition-text" class="transition-text"></p>
+      </div>
+
+      <div id="quiz-body" class="quiz-body">
+      <h2 id="quiz-question" class="question" tabindex="-1">질문이 여기에 표시됩니다.</h2>
+      <div id="quiz-choices" class="choices">
+        <button class="btn choice" type="button" data-index="0"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 1</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">1</span></button>
+        <button class="btn choice" type="button" data-index="1"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 2</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">2</span></button>
+        <button class="btn choice" type="button" data-index="2"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 3</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">3</span></button>
+        <button class="btn choice" type="button" data-index="3"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 4</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">4</span></button>
+      </div>
+
+      <footer class="quiz-footer">
+        <div id="quiz-feedback" class="feedback" aria-live="polite" hidden>
+          <p id="quiz-feedback-text" class="feedback-text"></p>
+          <p id="quiz-explanation" class="explanation"></p>
+        </div>
+        <button id="next-button" class="btn btn-dark" type="button" hidden>NEXT</button>
+      </footer>
+      </div>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section id="screen-result" class="screen" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" class="title" tabindex="-1">결과</h2>
+      <p class="result-total"><strong id="result-score">- / -</strong> <span id="result-percent">(-점)</span></p>
+      <ul id="result-categories" class="result-categories"></ul>
+      <p class="result-time">소요 시간 <strong id="result-time">-:--</strong></p>
+      <p id="result-rank" class="result-rank"></p>
+      <details class="wrong-note">
+        <summary id="wrong-note-summary">오답 노트</summary>
+        <ol id="wrong-note-list" class="wrong-note-list"></ol>
+      </details>
+      <div class="actions">
+        <button id="retry-button" class="btn btn-primary" type="button">PLAY AGAIN</button>
+        <button id="result-wrong-button" class="btn" type="button">WRONG ANSWERS</button>
+        <button id="result-ranking-button" class="btn" type="button">RANKING</button>
+      </div>
+    </section>
+
+    <!-- 틀린 문제 화면 -->
+    <section id="screen-wrong" class="screen" aria-labelledby="wrong-title" hidden>
+      <h2 id="wrong-title" class="title" tabindex="-1">WRONG ANSWERS</h2>
+      <p class="rules">놓친 문제들이 여기서 재도전을 기다리고 있어요! 맞히는 순간 목록에서 쏙 빠집니다!</p>
+      <p id="wrong-empty" class="empty-note">아직 틀린 문제가 하나도 없어요! 지금까지는 완벽한 무대네요!</p>
+      <ol id="wrong-list" class="wrong-list"></ol>
+      <div class="actions">
+        <button id="wrong-retry-button" class="btn btn-primary" type="button">RETRY WRONG ANSWERS</button>
+        <button id="wrong-clear-button" class="btn btn-danger" type="button">CLEAR LIST</button>
+      </div>
+    </section>
+
+    <!-- 순위 화면 -->
+    <section id="screen-ranking" class="screen" aria-labelledby="ranking-title" hidden>
+      <h2 id="ranking-title" class="title" tabindex="-1">RANKING</h2>
+      <p class="rules">모든 과목을 10문제씩, 총 40문제를 끝까지 푼 도전자만 이 명예의 전당에 오를 수 있어요!</p>
+      <div class="table-wrap">
+        <table class="ranking-table">
+          <thead>
+            <tr><th scope="col">RANK</th><th scope="col">SCORE</th><th scope="col">TIME</th><th scope="col">DATE</th></tr>
+          </thead>
+          <tbody id="ranking-body">
+            <tr><td colspan="4" class="empty">아직 아무도 무대에 오르지 않았어요! 첫 번째 주인공이 되어 보세요!</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p id="ranking-note" class="ranking-note" hidden></p>
+      <div class="actions">
+        <button id="home-button" class="btn btn-primary" type="button">HOME</button>
+        <button id="reset-button" class="btn btn-danger" type="button">RESET RECORDS</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
