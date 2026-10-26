@@ -1,0 +1,29 @@
+<!-- Created: 2026-09-29 09:12 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digit Recognizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Handwritten Digit Recognizer</h1>
+    <p class="hint">Draw a digit (0-9) in the box below.</p>
+
+    <canvas id="canvas" width="280" height="280"></canvas>
+
+    <div class="buttons">
+      <button id="clear-btn" type="button">Clear</button>
+      <button id="predict-btn" type="button">Predict</button>
+    </div>
+
+    <p id="result" class="result">Draw a digit (0-9)</p>
+
+    <ol id="probabilities" class="probabilities" start="0"></ol>
+  </main>
+
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

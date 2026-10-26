@@ -1,0 +1,6 @@
+# Created: 2026-09-29 09:12
+flask
+numpy
+scikit-learn
+pillow
+joblib

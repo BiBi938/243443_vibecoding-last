@@ -1,0 +1,15 @@
+# Created: 2026-09-29 10:05
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# PyInstaller output (regenerate with `pyinstaller digit_recognition.spec`)
+desktop_version/build/
+desktop_version/dist/
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
