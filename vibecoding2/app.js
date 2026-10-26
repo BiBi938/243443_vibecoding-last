@@ -47,6 +47,10 @@
   // 첫 render()가 끝났는지. 처음 그릴 때는 카드를 미끄러뜨리지 않는다.
   var hasRendered = false;
 
+  // renderList()가 목록을 비우는 중인지. 최신 브라우저는 초점이 있던 수정 입력창이
+  // 지워질 때도 focusout을 보내는데, 이것을 "다른 곳을 클릭함"으로 보고 수정을 끝내면 안 된다.
+  var isClearingList = false;
+
   // localStorage에서 상태를 읽는다. 값이 없거나 JSON이 깨져 있으면 빈 목록으로 시작한다.
   function load() {
     try {
@@ -122,7 +126,9 @@
       }
     }
 
+    isClearingList = true;
     listEl.innerHTML = '';
+    isClearingList = false;
 
     var filtered = getFilteredTodos();
     var totalPages = getTotalPages(filtered.length);
@@ -1130,6 +1136,7 @@
     });
 
     listEl.addEventListener('focusout', function (e) {
+      if (isClearingList) return;
       var isEditField = e.target.classList.contains('todo-edit-input') ||
         e.target.classList.contains('todo-edit-category');
       if (!isEditField) return;
