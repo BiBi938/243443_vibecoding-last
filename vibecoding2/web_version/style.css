@@ -806,6 +806,7 @@ body {
 .io-row {
   display: flex;
   gap: 8px;
+  white-space: nowrap;
 }
 
 /* 삭제 되돌리기 알림 */
@@ -952,5 +953,18 @@ body {
 
   .empty-message {
     padding: 48px 16px;
+  }
+}
+
+/* 데스크톱 중 좁은 폭(사이드를 빼면 메인 칸이 600px 남짓)에서는 하단 버튼 세 묶음이
+   한 줄에 들어가지 않으므로, 페이지 넘김을 위 한 줄로 올리고 나머지를 그 아래 양 끝에 둔다. */
+@media (min-width: 960px) and (max-width: 1199px) {
+  .list-footer {
+    grid-template-columns: 1fr auto;
+  }
+
+  .list-footer .pager {
+    grid-column: 1 / -1;
+    grid-row: 1;
   }
 }
