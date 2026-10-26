@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('todo-app:v1');
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed && (parsed.theme === 'light' || parsed.theme === 'dark')) {
+            document.documentElement.setAttribute('data-theme', parsed.theme);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <title>MyTask</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div class="app-header-row">
+        <h1>MyTask</h1>
+        <button type="button" id="theme-toggle-btn" aria-label="테마 전환">🌙</button>
+      </div>
+    </header>
+
+    <section class="dashboard" aria-label="진행률 대시보드">
+      <div class="dashboard-overall">
+        <div class="progress-bar" id="overall-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="전체 진행률">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="dashboard-overall-text">
+          <p id="progress-text">할 일을 추가해 보세요</p>
+          <p id="progress-complete-message" hidden>오늘 할 일을 모두 끝냈어요</p>
+        </div>
+      </div>
+
+      <div class="dashboard-summary">
+        <div class="summary-item">
+          <span class="summary-value" id="summary-total">0</span>
+          <span class="summary-label">전체</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="summary-done">0</span>
+          <span class="summary-label">완료</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-value" id="summary-left">0</span>
+          <span class="summary-label">남음</span>
+        </div>
+      </div>
+
+      <div class="dashboard-categories">
+        <button type="button" class="category-row" data-filter="work" id="cat-row-work">
+          <span class="category-row-label todo-tag todo-tag-work">업무</span>
+          <span class="progress-bar progress-bar-small" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="업무 진행률">
+            <span class="progress-bar-fill progress-bar-fill-work" id="cat-fill-work"></span>
+          </span>
+          <span class="category-row-count" id="cat-count-work">0/0</span>
+        </button>
+        <button type="button" class="category-row" data-filter="personal" id="cat-row-personal">
+          <span class="category-row-label todo-tag todo-tag-personal">개인</span>
+          <span class="progress-bar progress-bar-small" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="개인 진행률">
+            <span class="progress-bar-fill progress-bar-fill-personal" id="cat-fill-personal"></span>
+          </span>
+          <span class="category-row-count" id="cat-count-personal">0/0</span>
+        </button>
+        <button type="button" class="category-row" data-filter="study" id="cat-row-study">
+          <span class="category-row-label todo-tag todo-tag-study">공부</span>
+          <span class="progress-bar progress-bar-small" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="공부 진행률">
+            <span class="progress-bar-fill progress-bar-fill-study" id="cat-fill-study"></span>
+          </span>
+          <span class="category-row-count" id="cat-count-study">0/0</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="input-row" aria-label="할 일 추가">
+      <input
+        type="text"
+        id="todo-input"
+        maxlength="100"
+        placeholder="할 일을 입력하세요"
+        aria-label="할 일 내용">
+      <select id="category-select" aria-label="카테고리 선택">
+        <option value="work">업무</option>
+        <option value="personal">개인</option>
+        <option value="study">공부</option>
+      </select>
+      <button type="button" id="add-btn">추가</button>
+    </section>
+
+    <div class="tabs-row">
+      <nav class="tabs" aria-label="카테고리 탭">
+        <button type="button" class="tab-btn active" data-filter="all">전체 <span class="tab-count" id="count-all">0</span></button>
+        <button type="button" class="tab-btn" data-filter="work">업무 <span class="tab-count" id="count-work">0</span></button>
+        <button type="button" class="tab-btn" data-filter="personal">개인 <span class="tab-count" id="count-personal">0</span></button>
+        <button type="button" class="tab-btn" data-filter="study">공부 <span class="tab-count" id="count-study">0</span></button>
+      </nav>
+      <p id="today-date" class="today-date"></p>
+    </div>
+
+    <ul class="todo-list" id="todo-list" aria-label="할 일 목록"></ul>
+
+    <div class="list-footer">
+      <button type="button" id="clear-completed-btn">완료 항목 지우기</button>
+
+      <nav class="pager pager-hidden" id="pager" aria-label="목록 페이지">
+        <button type="button" class="pager-btn" id="page-prev" aria-label="이전 페이지">‹</button>
+        <span class="pager-indicator" id="page-indicator" aria-live="polite">1 / 1</span>
+        <button type="button" class="pager-btn" id="page-next" aria-label="다음 페이지">›</button>
+      </nav>
+
+      <div class="io-row">
+        <button type="button" id="export-btn">내보내기</button>
+        <button type="button" id="import-btn">가져오기</button>
+        <input type="file" id="import-file-input" accept="application/json,.json" hidden>
+      </div>
+    </div>
+  </main>
+
+  <div class="undo-toast" id="undo-toast" hidden>
+    <span>삭제됨</span>
+    <span aria-hidden="true">·</span>
+    <button type="button" id="undo-btn">되돌리기</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
