@@ -1,6 +1,6 @@
 # 문제 검증 기록
 
-`CLAUDE.md`의 퀴즈 문제 교차검증 규칙에 따라 `questions.js` 40문항을 점검한 기록이다.
+`CLAUDE.md`의 퀴즈 문제 교차검증 규칙에 따라 `questions.js` 44문항을 점검한 기록이다.
 
 - 확인일: 2026-10-27 (전 항목 같음)
 - 확인 방법: 출처 도메인을 지정한 웹 검색 결과에 나온 해당 페이지의 본문을 읽고 확인했다. 페이지를 직접 열어 읽은 출처에는 **(열람)** 표시를 붙였다.
@@ -21,6 +21,7 @@
 | h08 | 정조, 1794년 착공해 1796년 완공. 아버지 묘(현륭원) 이전과 연관됨 | [UNESCO Hwaseong Fortress](https://whc.unesco.org/en/list/817) | [국가유산청 Hwaseong Fortress](https://english.khs.go.kr/cop/bbs/selectBoardArticle.do?ctgryLrcls=CTGRY209&nttId=57995&bbsId=BBSMSTR_1205&uniq=0&mn=EN_03_01) | 2026-10-27 | 통과 |
 | h09 | 1919년 3월 1일 독립선언, 전국 만세운동 | [한국민족문화대백과 3·1운동](https://encykorea.aks.ac.kr/Article/E0026772) | [우리역사넷 3·1 독립 선언서](https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0040) | 2026-10-27 | 통과 |
 | h10 | 1919년 4월 11일 상하이에서 수립. 연해주의 대한국민의회(1919.2~3)가 '임시정부 성격'으로 먼저 결성되어 '블라디보스토크' 보기가 부분적으로 맞을 수 있음. 충칭은 1940~1945년 시기의 소재지 | [한국민족문화대백과 대한민국 임시정부](https://encykorea.aks.ac.kr/Article/E0015017), [대한국민의회](https://encykorea.aks.ac.kr/Article/E0014939) | [우리역사넷 '통합' 임시정부의 출범](https://contents.history.go.kr/mobile/nh/view.do?levelId=nh_048_0030_0010_0020_0030) | 2026-10-27 | 수정: 보기 블라디보스토크를 충칭으로 바꾸고, 해설에 4월 11일을 넣음 |
+| h11 | 1876년(고종 13) 강화부 연무당에서 일본과 체결. 정식 명칭 조일수호조규. 부산 외에 원산·인천(제물포) 개항. 오답 보기: 제물포조약 1882, 을사조약 1905, 한일병합조약 1910이라 1876년에 해당하지 않음 | [한국민족문화대백과 강화도조약](https://encykorea.aks.ac.kr/Article/E0001508) **(열람)**, [제물포조약](https://encykorea.aks.ac.kr/Article/E0051277), [한일병합조약](https://encykorea.aks.ac.kr/Article/E0061926) | [우리역사넷 강화도 조약](https://contents.history.go.kr/front/ta/print.do?levelId=ta_m71_0080_0020_0010_0020) **(열람)**, [우리역사넷 을사조약](https://contents.history.go.kr/mobile/kc/view.do?levelId=kc_i402720) | 2026-10-27 | 추가 |
 
 ## 과학
 
@@ -36,6 +37,7 @@
 | s08 | 소리는 매질이 필요해 진공에서 전달되지 않음 | [Britannica How Does Sound Travel?](https://www.britannica.com/science/How-Does-Sound-Travel) | [NASA Anatomy of an EM Wave](https://science.nasa.gov/ems/02_anatomy/) | 2026-10-27 | 통과 |
 | s09 | 뉴턴, 1687년 『프린키피아』에서 만유인력의 법칙 발표 | [Britannica Principia](https://www.britannica.com/topic/Principia) | [NASA Newton/Einstein Fact Cards](https://imagine.gsfc.nasa.gov/educators/programs/cosmictimes/educators/workshops/docs/InquiringIntoNatureUniverse/Newton_Einstein_FactCards.pdf) | 2026-10-27 | 통과 |
 | s10 | 빛의 삼원색은 빨강·초록·파랑이고, 섞으면 흰색 | [Britannica Primary color](https://www.britannica.com/science/primary-color) | [Britannica Additive mixture](https://www.britannica.com/science/additive-mixture) | 2026-10-27 | 통과 (두 출처가 같은 기관이라 독립성이 약함) |
+| s11 | 건조 공기는 부피로 질소 78.09%, 산소 20.95%, 아르곤 0.93%, 이산화 탄소 0.039% | [NOAA NESDIS Peeling Back the Layers of the Atmosphere](https://www.nesdis.noaa.gov/news/peeling-back-the-layers-of-the-atmosphere) **(열람)** | [NASA Facts About Earth](https://science.nasa.gov/earth/facts/) **(열람)**: 질소 78%, 산소 21% | 2026-10-27 | 추가 |
 
 ## 지리
 
@@ -51,6 +53,7 @@
 | g08 | 1884년 워싱턴 국제 회의에서 그리니치(런던)를 경도 0°로 정함. 그 전에는 파리 자오선 같은 다른 기준이 쓰였음 | [Britannica International Prime Meridian Conference](https://www.britannica.com/topic/International-Prime-Meridian-Conference) | [National Geographic Prime Meridian](https://education.nationalgeographic.org/resource/prime-meridian/) | 2026-10-27 | 수정: 질문에 '1884년 국제 회의에서 정한'을 넣어 기준을 밝히고, 해설을 보완함 |
 | g09 | 러시아가 면적 세계 1위 | [Britannica List of largest countries](https://www.britannica.com/topic/list-of-the-total-areas-of-the-worlds-countries-dependencies-and-territories-2130540) | [CIA World Factbook Russia](https://www.cia.gov/the-world-factbook/about/archives/2023/countries/russia/) | 2026-10-27 | 통과 |
 | g10 | 오스트레일리아를 대륙으로 보면 그린란드가 가장 큰 섬 | [Britannica Greenland](https://www.britannica.com/place/Greenland) | [National Geographic Island](https://education.nationalgeographic.org/resource/island/) | 2026-10-27 | 통과 |
+| g11 | 수에즈 운하는 이집트에서 지중해와 홍해를 잇고 1869년 11월 17일 개통 | [수에즈운하청(SCA) Canal History](https://www.suezcanal.gov.eg/English/About/SuezCanal/Pages/CanalHistory.aspx) **(열람)** | [Britannica Suez Canal](https://www.britannica.com/topic/Suez-Canal) (도메인 지정 검색 결과 본문. 페이지는 403으로 열리지 않음) | 2026-10-27 | 추가 |
 
 ## 일반상식
 
@@ -66,3 +69,4 @@
 | n08 | 윤년에는 2월에 하루를 더해 29일까지 있음 | [Britannica Leap Day, February 29](https://www.britannica.com/story/leap-day-february-29) | [NASA JPL Leap Day](https://www.jpl.nasa.gov/edu/news/doing-the-math-on-why-we-have-leap-day/) | 2026-10-27 | 통과 |
 | n09 | 베토벤 교향곡 제5번, 첫머리의 네 음 동기('운명' 별칭). 별칭의 유래(쉰들러의 일화)는 신빙성 논란이 있으나, 문제는 별칭으로 알려졌다는 사실만 물음 | [Britannica Symphony No. 5](https://kids.britannica.com/scholars/article/Symphony-No-5-in-C-Minor-Op-67/600703) | [Kennedy Center NSO Beethoven 4 & 5 booklet](https://www.kennedy-center.org/globalassets/nso/nso-media-projects/beethoven/symphonies-4--5/nso0009-d_digital_booklet_28x21cm_2022_beethoven_4_and_5-rev-2.pdf) | 2026-10-27 | 통과 |
 | n10 | 표준 주사위는 마주 보는 면의 합이 7 | [Wolfram MathWorld Dice](https://mathworld.wolfram.com/Dice.html) | [Britannica Dice game](https://www.britannica.com/topic/dice-game) | 2026-10-27 | 통과 |
+| n11 | 태극기 4괘는 건(하늘)·곤(땅)·감(물)·이(불). 진(震, 우레)은 팔괘에 속하지만 4괘가 아님 | [행정안전부 국가상징 태극기](https://www.mois.go.kr/chd/sub/a05/birth/screen.do) **(열람)** | [한국민족문화대백과 태극기](https://encykorea.aks.ac.kr/Article/E0058892) **(열람)**, [팔괘](https://encykorea.aks.ac.kr/Article/E0059705) **(열람)** | 2026-10-27 | 추가 |

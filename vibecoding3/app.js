@@ -1,6 +1,6 @@
 const SCREENS = ["start", "quiz", "result", "wrong", "ranking"];
 const NAV_SCREENS = ["start", "wrong", "ranking"];
-const QUESTIONS_PER_CATEGORY = 10;
+const QUESTIONS_PER_CATEGORY = 11;
 const CHOICES_PER_QUESTION = 4;
 const RECORDS_KEY = "quiz-records-v2"; // 점수 규칙이 바뀌어 예전 기록(quiz-records)과 따로 저장한다
 const WRONG_KEY = "quiz-wrong";
@@ -24,8 +24,8 @@ const HINT_REMOVE = 2;                      // 힌트(50:50)로 지우는 오답
 
 // 게임 모드. 순위표는 모드마다 따로 둔다. (틀린 문제 복습 "review"는 기록하지 않음)
 const MODES = {
-  all: { name: "ALL CHALLENGE", label: "전체도전", rule: "4과목 40문제를 끝까지 푼 도전자만 오를 수 있어요!" },
-  category: { name: "CATEGORY", label: "카테고리별", rule: "한 과목 10문제를 끝까지 푼 기록이 과목 이름과 함께 올라요!" },
+  all: { name: "ALL CHALLENGE", label: "전체도전", rule: "4과목 44문제를 끝까지 푼 도전자만 오를 수 있어요!" },
+  category: { name: "CATEGORY", label: "카테고리별", rule: "한 과목 11문제를 끝까지 푼 기록이 과목 이름과 함께 올라요!" },
   speed: { name: "SPEED QUIZ", label: "스피드퀴즈", rule: "4과목을 섞은 20문제를 끝까지 버틴 기록만 올라요!" }
 };
 const SPEED_QUESTIONS = 20;
@@ -301,7 +301,7 @@ function updateStartButtons() {
   el.startError.hidden = dataValid;
 }
 
-// 카테고리별 모드: 과목 버튼을 누르면 그 과목 10문제를 바로 시작한다.
+// 카테고리별 모드: 과목 버튼을 누르면 그 과목 11문제를 바로 시작한다.
 function renderSubjectButtons() {
   el.subjectButtons.replaceChildren(...CATEGORIES.map(({ key, name }) => {
     const button = textEl("button", name, "btn subject-button");

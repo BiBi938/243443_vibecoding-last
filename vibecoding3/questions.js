@@ -76,6 +76,15 @@ const QUESTIONS = {
       explanation: "정조는 아버지 사도세자의 무덤을 옮긴 뒤 수원 화성을 쌓게 했고, 화성은 1796년에 완공되었다."
     },
     {
+      id: "h11",
+      difficulty: "medium",
+      year: 1876,
+      question: "1876년 조선이 일본과 맺어 부산 등 세 항구를 열기로 한 조약은?",
+      choices: ["제물포 조약", "을사조약", "한일 병합 조약", "강화도 조약"],
+      answer: 3,
+      explanation: "조선은 1876년 일본과 강화도 조약(조일수호조규)을 맺고 부산·원산·인천(제물포) 세 항구를 열기로 했다."
+    },
+    {
       id: "h09",
       difficulty: "easy",
       year: 1919,
@@ -174,6 +183,14 @@ const QUESTIONS = {
       choices: ["빨강", "초록", "파랑", "노랑"],
       answer: 3,
       explanation: "빛의 삼원색은 빨강·초록·파랑이며, 셋을 모두 섞으면 흰색이 된다."
+    },
+    {
+      id: "s11",
+      difficulty: "medium",
+      question: "건조한 공기의 부피 비율로 볼 때 지구 대기에서 가장 많은 기체는?",
+      choices: ["질소", "산소", "이산화 탄소", "아르곤"],
+      answer: 0,
+      explanation: "건조한 공기는 부피로 질소가 약 78%, 산소가 약 21%를 차지하고 아르곤은 1%가 채 안 된다."
     }
   ],
   geography: [
@@ -256,6 +273,14 @@ const QUESTIONS = {
       choices: ["그린란드", "마다가스카르섬", "보르네오섬", "뉴기니섬"],
       answer: 0,
       explanation: "북대서양과 북극해 사이에 있는 그린란드는 세계에서 가장 큰 섬이다."
+    },
+    {
+      id: "g11",
+      difficulty: "medium",
+      question: "이집트의 수에즈 운하가 이어 주는 두 바다는?",
+      choices: ["대서양과 태평양", "흑해와 카스피해", "북해와 발트해", "지중해와 홍해"],
+      answer: 3,
+      explanation: "수에즈 운하는 이집트에서 지중해와 홍해를 잇는 운하로, 1869년 11월 17일에 개통되었다."
     }
   ],
   general: [
@@ -338,6 +363,14 @@ const QUESTIONS = {
       choices: ["5", "6", "7", "8"],
       answer: 2,
       explanation: "일반적인 주사위는 1과 6, 2와 5, 3과 4가 마주 보도록 만들어 합이 항상 7이다."
+    },
+    {
+      id: "n11",
+      difficulty: "medium",
+      question: "태극기 네 모서리에 그려진 4괘가 아닌 것은?",
+      choices: ["건", "곤", "감", "진"],
+      answer: 3,
+      explanation: "태극기의 4괘는 건(하늘)·곤(땅)·감(물)·이(불)이다. 진(우레)은 팔괘 가운데 하나지만 태극기에는 없다."
     }
   ]
 };
