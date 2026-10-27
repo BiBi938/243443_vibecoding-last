@@ -44,29 +44,35 @@
           </g>
         </svg>
       </h1>
-      <p class="rules">QUIZ SHOW에 오신 걸 환영합니다!<br>과목 하나를 골라 원하는 만큼 도전하시거나, 한국사부터 일반상식까지 모든 과목을 쭉 달려 보세요!</p>
+      <p class="rules">QUIZ SHOW에 오신 걸 환영합니다!<br>오늘 도전할 무대를 골라 주세요!</p>
       <p id="start-error" class="hint" hidden>앗, 무대 뒤에 문제가 생겼어요! 문제 데이터를 고칠 때까지 잠시만 기다려 주세요! (콘솔 확인)</p>
 
-      <div id="subject-buttons" class="subject-grid" role="group" aria-label="Choose a subject"></div>
+      <button id="all-start-button" class="btn btn-primary btn-all" type="button">
+        <span>ALL CHALLENGE</span>
+        <small class="btn-sub">전체도전 · 4과목 40문제</small>
+      </button>
 
-      <div id="count-panel" class="count-panel" hidden>
-        <div class="count-head">
-          <span id="count-label">QUESTIONS</span>
-          <span class="count-value">
-            <button id="count-display" class="count-display" type="button" title="Click to type a number">10</button>
-            <input id="count-input" class="count-input" type="number" inputmode="numeric" min="1" aria-label="Number of questions" hidden>
-            <span class="count-unit">QUESTIONS</span>
-          </span>
-        </div>
-        <input id="count-slider" class="count-slider" type="range" min="1" max="10" value="10" aria-label="Number of questions">
-        <div class="count-scale"><span>1</span><span id="count-max">10</span></div>
-        <button id="subject-start-button" class="btn btn-dark" type="button">PLAY</button>
+      <div class="mode-group">
+        <p class="mode-title">CATEGORY <small>카테고리별 · 고른 과목 10문제</small></p>
+        <div id="subject-buttons" class="subject-grid" role="group" aria-label="Choose a subject"></div>
       </div>
 
-      <button id="all-start-button" class="btn btn-primary btn-all" type="button">
-        <span>ALL SUBJECTS</span>
-        <small id="all-summary" class="btn-sub"></small>
+      <button id="speed-start-button" class="btn btn-dark btn-all" type="button">
+        <span>SPEED QUIZ</span>
+        <small class="btn-sub">스피드퀴즈 · 4과목 섞어 무작위 20문제</small>
       </button>
+
+      <details class="wrong-note score-rules">
+        <summary>SCORING</summary>
+        <ul class="score-rules-list">
+          <li>정답 10점 × 난이도 (EASY ×1 · MEDIUM ×1.5 · HARD ×2)</li>
+          <li>문제당 15초, 시간이 다 지나면 오답</li>
+          <li>10초 안에 맞히면 +3점</li>
+          <li>힌트(50:50) 없이 맞히면 +2점</li>
+          <li>연속 정답 3개 +2점 · 5개 +5점 · 10개 +10점</li>
+          <li>틀리거나 시간이 지나면 0점, 콤보도 처음부터</li>
+        </ul>
+      </details>
     </section>
 
     <!-- 퀴즈 화면 -->
@@ -80,11 +86,16 @@
       <header class="quiz-header">
         <div class="quiz-meta">
           <span id="quiz-category" class="badge">한국사</span>
+          <span id="quiz-difficulty" class="badge badge-level" data-level="easy">EASY ×1</span>
           <span id="quiz-counter">1 / 10</span>
+          <span id="quiz-combo" class="quiz-combo" hidden>2 COMBO</span>
           <span id="quiz-score">SCORE 0</span>
         </div>
         <div class="progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0">
           <div id="quiz-progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="quiz-time" class="progress time-gauge" role="progressbar" aria-label="Time" aria-valuemin="0" aria-valuemax="15" aria-valuenow="0">
+          <div id="quiz-time-bar" class="progress-bar time-bar"></div>
         </div>
       </header>
 
@@ -94,6 +105,9 @@
 
       <div id="quiz-body" class="quiz-body">
       <h2 id="quiz-question" class="question" tabindex="-1">질문이 여기에 표시됩니다.</h2>
+      <div class="quiz-tools">
+        <button id="hint-button" class="btn btn-quiet hint-button" type="button">HINT!</button>
+      </div>
       <div id="quiz-choices" class="choices">
         <button class="btn choice" type="button" data-index="0"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 1</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">1</span></button>
         <button class="btn choice" type="button" data-index="1"><span class="choice-check" aria-hidden="true"></span><span class="choice-text">보기 2</span><span class="choice-mark"></span><span class="choice-key" aria-hidden="true">2</span></button>
@@ -104,6 +118,7 @@
       <footer class="quiz-footer">
         <div id="quiz-feedback" class="feedback" aria-live="polite" hidden>
           <p id="quiz-feedback-text" class="feedback-text"></p>
+          <p id="quiz-points" class="points" hidden></p>
           <p id="quiz-explanation" class="explanation"></p>
         </div>
         <button id="next-button" class="btn btn-dark" type="button" hidden>NEXT</button>
@@ -115,7 +130,8 @@
     <section id="screen-result" class="screen" aria-labelledby="result-title" hidden>
       <h2 id="result-title" class="title" tabindex="-1">결과</h2>
       <p class="result-total"><strong id="result-score">- / -</strong> <span id="result-percent">(-점)</span></p>
-      <ul id="result-categories" class="result-categories"></ul>
+      <ul id="result-categories" class="result-categories" aria-label="Correct answers by subject"></ul>
+      <ul id="result-breakdown" class="result-categories result-breakdown" aria-label="Score breakdown"></ul>
       <p class="result-time">소요 시간 <strong id="result-time">-:--</strong></p>
       <p id="result-rank" class="result-rank"></p>
       <details class="wrong-note">
@@ -144,14 +160,12 @@
     <!-- 순위 화면 -->
     <section id="screen-ranking" class="screen" aria-labelledby="ranking-title" hidden>
       <h2 id="ranking-title" class="title" tabindex="-1">RANKING</h2>
-      <p class="rules">모든 과목을 10문제씩, 총 40문제를 끝까지 푼 도전자만 이 명예의 전당에 오를 수 있어요!</p>
+      <div id="ranking-tabs" class="subject-tabs ranking-tabs" role="group" aria-label="Choose a mode"></div>
+      <p id="ranking-rule" class="rules"></p>
       <div class="table-wrap">
         <table class="ranking-table">
-          <thead>
-            <tr><th scope="col">RANK</th><th scope="col">SCORE</th><th scope="col">TIME</th><th scope="col">DATE</th></tr>
-          </thead>
+          <thead id="ranking-head"></thead>
           <tbody id="ranking-body">
-            <tr><td colspan="4" class="empty">아직 아무도 무대에 오르지 않았어요! 첫 번째 주인공이 되어 보세요!</td></tr>
           </tbody>
         </table>
       </div>

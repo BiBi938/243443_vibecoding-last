@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 상식 퀴즈 게임(화면 타이틀 'QUIZ SHOW'). 순수 HTML/CSS/JavaScript이고 빌드 도구나 서버가 없다. `index.html`을 브라우저로 열면 바로 실행된다.
 
-- 기준 문서는 `상식 퀴즈 게임PRD.md`다. 기능이나 디자인을 바꾸면 PRD도 함께 고친다.
+- 기준 문서는 `PRD.md`다. 기능이나 디자인을 바꾸면 PRD도 함께 고친다.
 - 파일: `index.html`(화면 5개를 `section`으로 전환), `style.css`, `questions.js`(`QUESTIONS`, `CATEGORIES`), `app.js`(게임 로직).
 - 타이틀 간판은 `index.html` 안의 인라인 SVG다. 전구 위치는 계산해서 만든 값이라 손으로 하나씩 고치지 말고 모양 전체를 다시 생성한다.
 

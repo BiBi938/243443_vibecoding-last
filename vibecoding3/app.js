@@ -2,10 +2,34 @@ const SCREENS = ["start", "quiz", "result", "wrong", "ranking"];
 const NAV_SCREENS = ["start", "wrong", "ranking"];
 const QUESTIONS_PER_CATEGORY = 10;
 const CHOICES_PER_QUESTION = 4;
-const RECORDS_KEY = "quiz-records";
+const RECORDS_KEY = "quiz-records-v2"; // 점수 규칙이 바뀌어 예전 기록(quiz-records)과 따로 저장한다
 const WRONG_KEY = "quiz-wrong";
 const RANKING_SIZE = 10;
 const TRANSITION_MS = 1500;
+const TIMER_TICK_MS = 100;
+
+// 점수 규칙: 정답만 득점. 기본 10점 × 난이도 배수 + 보너스
+const BASE_POINTS = 10;
+const DIFFICULTIES = {
+  easy: { label: "EASY", multiplier: 1 },
+  medium: { label: "MEDIUM", multiplier: 1.5 },
+  hard: { label: "HARD", multiplier: 2 }
+};
+const TIME_LIMIT_MS = 15000;  // 모든 모드 문제당 제한 시간. 넘기면 시간 초과 오답
+const FAST_ANSWER_MS = 10000; // 이보다 빨리 맞히면 시간 보너스
+const FAST_BONUS = 3;
+const NO_HINT_BONUS = 2;
+const COMBO_BONUS = { 3: 2, 5: 5, 10: 10 }; // 연속 정답 수에 도달한 그 문제에서 한 번씩
+const HINT_REMOVE = 2;                      // 힌트(50:50)로 지우는 오답 수
+
+// 게임 모드. 순위표는 모드마다 따로 둔다. (틀린 문제 복습 "review"는 기록하지 않음)
+const MODES = {
+  all: { name: "ALL CHALLENGE", label: "전체도전", rule: "4과목 40문제를 끝까지 푼 도전자만 오를 수 있어요!" },
+  category: { name: "CATEGORY", label: "카테고리별", rule: "한 과목 10문제를 끝까지 푼 기록이 과목 이름과 함께 올라요!" },
+  speed: { name: "SPEED QUIZ", label: "스피드퀴즈", rule: "4과목을 섞은 20문제를 끝까지 버틴 기록만 올라요!" }
+};
+const SPEED_QUESTIONS = 20;
+const TIMEOUT = -1; // picked 값: 시간 초과
 
 const el = {
   navTabs: [...document.querySelectorAll("#app-nav .nav-tab")],
@@ -14,19 +38,14 @@ const el = {
   startTitle: document.getElementById("start-title"),
   startError: document.getElementById("start-error"),
   subjectButtons: document.getElementById("subject-buttons"),
-  countPanel: document.getElementById("count-panel"),
-  countLabel: document.getElementById("count-label"),
-  countDisplay: document.getElementById("count-display"),
-  countInput: document.getElementById("count-input"),
-  countSlider: document.getElementById("count-slider"),
-  countMax: document.getElementById("count-max"),
-  subjectStartButton: document.getElementById("subject-start-button"),
   allStartButton: document.getElementById("all-start-button"),
-  allSummary: document.getElementById("all-summary"),
+  speedStartButton: document.getElementById("speed-start-button"),
   subjectTabs: document.getElementById("subject-tabs"),
   sign: document.getElementById("quiz-sign"),
   category: document.getElementById("quiz-category"),
+  difficulty: document.getElementById("quiz-difficulty"),
   counter: document.getElementById("quiz-counter"),
+  combo: document.getElementById("quiz-combo"),
   score: document.getElementById("quiz-score"),
   progress: document.querySelector("#screen-quiz .progress"),
   progressBar: document.getElementById("quiz-progress-bar"),
@@ -34,9 +53,13 @@ const el = {
   transitionText: document.getElementById("quiz-transition-text"),
   quizBody: document.getElementById("quiz-body"),
   question: document.getElementById("quiz-question"),
+  hintButton: document.getElementById("hint-button"),
+  timeGauge: document.getElementById("quiz-time"),
+  timeBar: document.getElementById("quiz-time-bar"),
   choices: [...document.querySelectorAll("#quiz-choices .choice")],
   feedback: document.getElementById("quiz-feedback"),
   feedbackText: document.getElementById("quiz-feedback-text"),
+  points: document.getElementById("quiz-points"),
   explanation: document.getElementById("quiz-explanation"),
   nextButton: document.getElementById("next-button"),
   quitButton: document.getElementById("quit-button"),
@@ -44,6 +67,7 @@ const el = {
   resultScore: document.getElementById("result-score"),
   resultPercent: document.getElementById("result-percent"),
   resultCategories: document.getElementById("result-categories"),
+  resultBreakdown: document.getElementById("result-breakdown"),
   resultTime: document.getElementById("result-time"),
   resultRank: document.getElementById("result-rank"),
   wrongNoteSummary: document.getElementById("wrong-note-summary"),
@@ -57,6 +81,9 @@ const el = {
   wrongRetryButton: document.getElementById("wrong-retry-button"),
   wrongClearButton: document.getElementById("wrong-clear-button"),
   rankingTitle: document.getElementById("ranking-title"),
+  rankingTabs: document.getElementById("ranking-tabs"),
+  rankingRule: document.getElementById("ranking-rule"),
+  rankingHead: document.getElementById("ranking-head"),
   rankingBody: document.getElementById("ranking-body"),
   rankingNote: document.getElementById("ranking-note"),
   homeButton: document.getElementById("home-button"),
@@ -65,11 +92,15 @@ const el = {
 
 // 게임 진행 상태 (메모리, 저장 안 함)
 const state = {
-  mode: null,        // "single"(한 과목) | "all"(모든 과목) | "review"(틀린 문제)
-  sessions: [],       // 과목 탭마다 따로 진행: { key, name, queue, index, score, picked }
+  mode: null,         // "all"(전체도전) | "category"(카테고리별) | "speed"(스피드퀴즈) | "review"(틀린 문제)
+  category: null,     // 카테고리별 모드에서 고른 과목
+  sessions: [],       // 과목 탭마다 따로 진행. 항목은 newSession() 참고
   current: 0,         // 지금 보고 있는 세션
   categoryScores: {}, // 카테고리별 맞힌 수
   categoryTotals: {}, // 카테고리별 푼 문제 수 (결과 계산 때 채움)
+  combo: 0,           // 지금 이어지고 있는 연속 정답 수 (탭을 오가도 답한 순서대로 셈)
+  maxCombo: 0,
+  breakdown: { base: 0, fast: 0, noHint: 0, combo: 0 }, // 항목별 득점 합계
   startedAt: null,    // Date.now()
   endedAt: null,      // 마지막 문제에 답한 시각 (그만두면 그만둔 시각)
   quit: false,        // 중간에 그만뒀는지
@@ -79,9 +110,9 @@ const state = {
 let currentScreen = "start";
 let transitionTimer = null;
 let transitionShownAt = 0;
+let questionTimer = null;   // 문제 시간을 재는 setInterval
 let lastRecordId = null;    // 순위표에서 강조할 방금 기록
-let selectedSubject = null; // 시작 화면에서 문제 수를 고르고 있는 과목
-let counts = {};            // 과목별로 풀 문제 수
+let rankingMode = "all";    // 순위표에서 보고 있는 모드
 let questionById = new Map();
 
 // 지정한 화면 하나만 보이고 나머지는 숨긴다.
@@ -90,6 +121,7 @@ function showScreen(name) {
     console.error(`알 수 없는 화면: ${name}`);
     return;
   }
+  if (name !== "quiz") stopQuestionTimer();
   SCREENS.forEach((screen) => {
     document.getElementById(`screen-${screen}`).hidden = screen !== name;
   });
@@ -127,6 +159,9 @@ function validateQuestions() {
         if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > CHOICES_PER_QUESTION - 1) {
           errors.push(`${label}: answer(${q.answer})가 0~${CHOICES_PER_QUESTION - 1} 범위를 벗어났습니다.`);
         }
+        if (!Object.hasOwn(DIFFICULTIES, q.difficulty)) {
+          errors.push(`${label}: difficulty(${q.difficulty})가 ${Object.keys(DIFFICULTIES).join("/")} 중 하나가 아닙니다.`);
+        }
         if (chronological && typeof q.year !== "number") {
           errors.push(`${label}: 시대순 정렬에 필요한 year가 없습니다.`);
         }
@@ -156,27 +191,24 @@ function categoryName(key) {
   return categoryOf(key).name;
 }
 
+// 보기를 섞고, 정답 문자열 기준으로 새 정답 인덱스를 다시 계산한다.
+function withShuffledChoices(q, key) {
+  const correctText = q.choices[q.answer];
+  const choices = shuffle(q.choices);
+  return { ...q, choices, answer: choices.indexOf(correctText), category: key };
+}
+
 // 한 카테고리의 문제들을 출제 순서로 정리한다. 시대순 카테고리는 연도순, 나머지는 셔플.
-// 보기는 항상 섞고, 정답 문자열 기준으로 새 정답 인덱스를 다시 계산한다.
 function arrangeQuestions(key, list) {
   const ordered = categoryOf(key).chronological
     ? list.slice().sort((a, b) => a.year - b.year || a.id.localeCompare(b.id))
     : shuffle(list);
-  return ordered.map((q) => {
-    const correctText = q.choices[q.answer];
-    const choices = shuffle(q.choices);
-    return { ...q, choices, answer: choices.indexOf(correctText), category: key };
-  });
+  return ordered.map((q) => withShuffledChoices(q, key));
 }
 
 // 카테고리에서 n개를 무작위로 뽑아 출제 순서로 정리한다.
 function pickQuestions(key, n) {
   return arrangeQuestions(key, shuffle(QUESTIONS[key]).slice(0, n));
-}
-
-// "1 QUESTION" / "10 QUESTIONS"
-function questionsLabel(n) {
-  return `${n} QUESTION${n === 1 ? "" : "S"}`;
 }
 
 function formatTime(sec) {
@@ -198,6 +230,11 @@ function textEl(tag, text, className) {
   node.textContent = text;
   if (className) node.className = className;
   return node;
+}
+
+function difficultyLabel(key) {
+  const { label, multiplier } = DIFFICULTIES[key];
+  return `${label} ×${multiplier}`;
 }
 
 // ----- localStorage -----
@@ -223,7 +260,8 @@ function writeStorage(key, value) {
 }
 
 function isValidRecord(r) {
-  return r && typeof r.id === "string" && typeof r.score === "number" && typeof r.elapsedSec === "number" && typeof r.playedAt === "string";
+  return r && typeof r.id === "string" && Object.hasOwn(MODES, r.mode) && typeof r.score === "number" &&
+    typeof r.correct === "number" && typeof r.elapsedSec === "number" && typeof r.playedAt === "string";
 }
 
 function loadRecords() {
@@ -255,89 +293,42 @@ function removeWrongId(id) {
 
 // 문제 데이터 검증에 실패하면 시작 버튼을 막는다.
 function updateStartButtons() {
-  el.subjectStartButton.disabled = !dataValid;
   el.allStartButton.disabled = !dataValid;
+  el.speedStartButton.disabled = !dataValid;
+  [...el.subjectButtons.children].forEach((button) => {
+    button.disabled = !dataValid;
+  });
   el.startError.hidden = dataValid;
 }
 
+// 카테고리별 모드: 과목 버튼을 누르면 그 과목 10문제를 바로 시작한다.
 function renderSubjectButtons() {
   el.subjectButtons.replaceChildren(...CATEGORIES.map(({ key, name }) => {
     const button = textEl("button", name, "btn subject-button");
     button.type = "button";
-    button.dataset.key = key;
-    button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-controls", "count-panel");
-    button.addEventListener("click", () => selectSubject(key));
+    button.addEventListener("click", () => startCategory(key));
     return button;
   }));
 }
 
-// 과목 버튼을 누르면 문제 수 패널을 연다. 같은 버튼을 다시 누르면 닫는다.
-function selectSubject(key) {
-  selectedSubject = selectedSubject === key ? null : key;
-  [...el.subjectButtons.children].forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.key === selectedSubject));
-  });
-  closeCountInput(false);
-  el.countPanel.hidden = selectedSubject === null;
-  if (selectedSubject === null) return;
-
-  const max = QUESTIONS[key].length;
-  el.countSlider.max = max;
-  el.countInput.max = max;
-  el.countMax.textContent = max;
-  el.countLabel.textContent = categoryName(key);
-  renderCount();
-}
-
-function setCount(key, value) {
-  const max = QUESTIONS[key].length;
-  counts[key] = Math.min(max, Math.max(1, Math.round(value)));
-  renderCount();
-}
-
-function renderCount() {
-  if (selectedSubject !== null) {
-    const n = counts[selectedSubject];
-    el.countSlider.value = n;
-    el.countDisplay.textContent = n;
-    el.subjectStartButton.textContent = `PLAY ${categoryName(selectedSubject)} · ${questionsLabel(n)}`;
-  }
-  const total = CATEGORIES.reduce((sum, { key }) => sum + counts[key], 0);
-  el.allSummary.textContent = `${CATEGORIES.map(({ key, name }) => `${name} ${counts[key]}`).join(" · ")} (${questionsLabel(total)})`;
-}
-
-// 숫자를 누르면 직접 입력칸으로 바뀐다.
-function openCountInput() {
-  el.countInput.value = counts[selectedSubject];
-  el.countDisplay.hidden = true;
-  el.countInput.hidden = false;
-  el.countInput.focus();
-  el.countInput.select();
-}
-
-function closeCountInput(commit) {
-  if (el.countInput.hidden) return;
-  if (commit && selectedSubject !== null) {
-    const value = Number(el.countInput.value);
-    if (el.countInput.value.trim() !== "" && Number.isFinite(value)) setCount(selectedSubject, value);
-  }
-  el.countInput.hidden = true;
-  el.countDisplay.hidden = false;
-  renderCount();
-}
-
 // ----- 게임 시작 -----
-
-function startSubject() {
-  if (!dataValid || selectedSubject === null) return;
-  const key = selectedSubject;
-  startGame("single", [{ key, name: categoryName(key), queue: pickQuestions(key, counts[key]) }]);
-}
 
 function startAll() {
   if (!dataValid) return;
-  startGame("all", CATEGORIES.map(({ key, name }) => ({ key, name, queue: pickQuestions(key, counts[key]) })));
+  startGame("all", CATEGORIES.map(({ key, name }) => ({ key, name, queue: pickQuestions(key, QUESTIONS_PER_CATEGORY) })));
+}
+
+function startCategory(key) {
+  if (!dataValid) return;
+  startGame("category", [{ key, name: categoryName(key), queue: pickQuestions(key, QUESTIONS_PER_CATEGORY) }], key);
+}
+
+// 네 과목 문제를 모두 섞어 20문제를 뽑는다. 과목이 섞이므로 시대순 정렬은 하지 않는다.
+function startSpeed() {
+  if (!dataValid) return;
+  const pool = CATEGORIES.flatMap(({ key }) => QUESTIONS[key].map((q) => ({ q, key })));
+  const queue = shuffle(pool).slice(0, SPEED_QUESTIONS).map(({ q, key }) => withShuffledChoices(q, key));
+  startGame("speed", [{ key: "speed", name: MODES.speed.name, queue }]);
 }
 
 // 틀린 문제를 카테고리 순서대로 모아 다시 푼다.
@@ -350,16 +341,34 @@ function startReview() {
   startGame("review", [{ key: "review", name: "WRONG ANSWERS", queue }]);
 }
 
-function startGame(mode, plan) {
-  closeCountInput(true);
+// 세션 하나 = 과목 탭 하나의 진행 상태
+function newSession(plan) {
+  return {
+    ...plan,           // key, name, queue
+    index: 0,          // 지금 문제 번호
+    correct: 0,        // 맞힌 수
+    points: 0,         // 얻은 점수
+    picked: null,      // 고른 보기 번호. 시간 초과면 TIMEOUT, 아직 안 골랐으면 null
+    removed: null,     // 힌트로 지운 보기 번호 배열. 힌트를 안 썼으면 null
+    spentMs: 0,        // 이 문제에 쓴 시간 (탭을 오가면 멈췄다가 이어서 잰다)
+    shownAt: null,     // 시간을 재기 시작한 시각. 멈춰 있으면 null
+    result: null       // 답한 뒤 보여 줄 득점 내역
+  };
+}
+
+function startGame(mode, plan, category = null) {
   state.mode = mode;
-  state.sessions = plan.map((p) => ({ ...p, index: 0, score: 0, picked: null }));
+  state.category = category;
+  state.sessions = plan.map(newSession);
   state.current = 0;
   state.categoryScores = {};
   state.categoryTotals = {};
   plan.flatMap((p) => p.queue).forEach((q) => {
     state.categoryScores[q.category] = 0;
   });
+  state.combo = 0;
+  state.maxCombo = 0;
+  state.breakdown = { base: 0, fast: 0, noHint: 0, combo: 0 };
   state.startedAt = Date.now();
   state.endedAt = null;
   state.quit = false;
@@ -384,7 +393,11 @@ function isDone(session) {
 }
 
 function totalScore() {
-  return state.sessions.reduce((sum, s) => sum + s.score, 0);
+  return state.sessions.reduce((sum, s) => sum + s.points, 0);
+}
+
+function totalCorrect() {
+  return state.sessions.reduce((sum, s) => sum + s.correct, 0);
 }
 
 function totalQuestions() {
@@ -400,7 +413,56 @@ function nextUnfinished() {
   return state.sessions.findIndex((s) => !isDone(s));
 }
 
-// 모든 과목 풀기에서만 과목 탭을 보여준다. 탭을 누르면 그 과목의 진행 상태로 바로 넘어간다.
+// ----- 문제 시간 -----
+
+function questionMs(s) {
+  return s.spentMs + (s.shownAt === null ? 0 : Date.now() - s.shownAt);
+}
+
+// 지금 문제가 답하기 전이면 시간을 (이어서) 잰다.
+function startQuestionTimer() {
+  const s = currentSession();
+  if (s.picked !== null || s.shownAt !== null) return;
+  s.shownAt = Date.now();
+  clearInterval(questionTimer);
+  questionTimer = setInterval(tickQuestionTimer, TIMER_TICK_MS);
+  renderTimer();
+}
+
+// 시간을 멈추고 지금까지 쓴 시간을 쌓아 둔다. (답했을 때, 탭을 옮길 때, 확인 창을 띄울 때)
+function pauseQuestionTimer() {
+  stopQuestionTimer();
+  const s = currentSession();
+  if (s && s.shownAt !== null) {
+    s.spentMs += Date.now() - s.shownAt;
+    s.shownAt = null;
+  }
+}
+
+function stopQuestionTimer() {
+  clearInterval(questionTimer);
+  questionTimer = null;
+}
+
+function tickQuestionTimer() {
+  if (questionMs(currentSession()) >= TIME_LIMIT_MS) {
+    answer(TIMEOUT);
+    return;
+  }
+  renderTimer();
+}
+
+// 시간 게이지: 왼쪽에서 오른쪽으로 차올라 제한 시간(15초)에 가득 찬다.
+// 시간 보너스 기준(10초)을 넘기면 붉게 바뀐다.
+function renderTimer() {
+  const s = currentSession();
+  const ms = s.result ? s.result.ms : questionMs(s);
+  el.timeBar.style.width = `${Math.min(1, ms / TIME_LIMIT_MS) * 100}%`;
+  el.timeGauge.setAttribute("aria-valuenow", Math.min(TIME_LIMIT_MS / 1000, Math.floor(ms / 1000)));
+  el.timeGauge.classList.toggle("is-urgent", ms >= FAST_ANSWER_MS);
+}
+
+// 전체도전에서만 과목 탭을 보여준다. 탭을 누르면 그 과목의 진행 상태로 바로 넘어간다.
 function renderTabs() {
   el.subjectTabs.hidden = state.sessions.length < 2;
   if (el.subjectTabs.hidden) return;
@@ -411,7 +473,7 @@ function renderTabs() {
     button.type = "button";
     button.className = "subject-tab";
     button.append(textEl("span", s.name, "subject-tab-name"),
-      textEl("span", done ? `✓ ${s.score}/${s.queue.length}` : `${answeredCount(s)}/${s.queue.length}`, "subject-tab-progress"));
+      textEl("span", done ? `✓ ${s.correct}/${s.queue.length}` : `${answeredCount(s)}/${s.queue.length}`, "subject-tab-progress"));
     if (i === state.current) button.setAttribute("aria-current", "true");
     if (done) button.classList.add("is-done");
     button.disabled = Boolean(transitionTimer) || (done && i !== state.current);
@@ -423,6 +485,7 @@ function renderTabs() {
 function switchSession(index) {
   if (currentScreen !== "quiz" || transitionTimer || index === state.current) return;
   if (isDone(state.sessions[index])) return;
+  pauseQuestionTimer();
   state.current = index;
   renderQuestion();
 }
@@ -434,6 +497,8 @@ function updateProgress() {
   el.progress.setAttribute("aria-valuemax", s.queue.length);
   el.progress.setAttribute("aria-valuenow", done);
   el.score.textContent = `SCORE ${totalScore()}`;
+  el.combo.hidden = state.combo < 2;
+  el.combo.textContent = `${state.combo} COMBO`;
 }
 
 // 현재 세션의 문제를 그린다. 이미 답한 문제(탭을 오가다 돌아온 경우)면 피드백까지 다시 보여준다.
@@ -443,34 +508,75 @@ function renderQuestion() {
 
   el.sign.textContent = `QUESTION ${String(s.index + 1).padStart(2, "0")}`;
   el.category.textContent = categoryName(q.category);
+  el.difficulty.textContent = difficultyLabel(q.difficulty);
+  el.difficulty.dataset.level = q.difficulty;
   el.counter.textContent = `${s.index + 1} / ${s.queue.length}`;
   el.question.textContent = q.question;
 
   el.choices.forEach((button, i) => {
     button.querySelector(".choice-text").textContent = q.choices[i];
     button.querySelector(".choice-mark").textContent = "";
-    button.classList.remove("is-picked", "is-correct", "is-wrong");
+    button.classList.remove("is-picked", "is-correct", "is-wrong", "is-removed");
     button.disabled = false;
   });
+  renderRemoved();
 
   el.feedback.hidden = true;
   el.feedback.classList.remove("is-correct", "is-wrong");
   el.nextButton.hidden = true;
 
-  if (s.picked === null) el.question.focus();
-  else showFeedback();
+  if (s.picked === null) {
+    el.question.focus();
+    startQuestionTimer();
+  } else {
+    showFeedback();
+  }
+  renderTimer();
   updateProgress();
   renderTabs();
 }
 
+// 힌트로 지운 보기는 누를 수 없게 흐리게 표시한다.
+function renderRemoved() {
+  const s = currentSession();
+  (s.removed || []).forEach((i) => {
+    el.choices[i].classList.add("is-removed");
+    el.choices[i].disabled = true;
+  });
+  el.hintButton.disabled = s.picked !== null || s.removed !== null;
+  el.hintButton.textContent = s.removed === null ? "HINT!" : "HINT USED";
+}
+
+// 오답 보기 2개를 무작위로 지운다. 힌트를 쓴 문제는 힌트 미사용 보너스를 받지 못한다.
+function useHint() {
+  const s = currentSession();
+  if (currentScreen !== "quiz" || transitionTimer || s.picked !== null || s.removed !== null) return;
+  const q = s.queue[s.index];
+  const wrong = q.choices.map((_, i) => i).filter((i) => i !== q.answer);
+  s.removed = shuffle(wrong).slice(0, HINT_REMOVE);
+  renderRemoved();
+  el.choices.find((button) => !button.disabled).focus();
+}
+
 function selectChoice(index) {
   const s = currentSession();
+  if (s.removed !== null && s.removed.includes(index)) return;
+  answer(index);
+}
+
+// 답을 확정한다. index가 TIMEOUT이면 시간 초과로 오답 처리한다.
+function answer(index) {
+  const s = currentSession();
   if (currentScreen !== "quiz" || transitionTimer || s.picked !== null) return;
+  pauseQuestionTimer();
   s.picked = index;
 
   const q = s.queue[s.index];
-  if (index === q.answer) {
-    s.score += 1;
+  const correct = index === q.answer;
+  s.result = scoreAnswer(q, correct, s.spentMs, s.removed !== null);
+  if (correct) {
+    s.correct += 1;
+    s.points += s.result.total;
     state.categoryScores[q.category] += 1;
     removeWrongId(q.id);
   } else {
@@ -478,7 +584,7 @@ function selectChoice(index) {
     state.wrongAnswers.push({
       category: q.category,
       question: q.question,
-      chosen: q.choices[index],
+      chosen: index === TIMEOUT ? `시간 초과 (${TIME_LIMIT_MS / 1000}초)` : q.choices[index],
       answer: q.choices[q.answer],
       explanation: q.explanation
     });
@@ -486,24 +592,51 @@ function selectChoice(index) {
   if (state.sessions.every(isDone)) state.endedAt = Date.now();
 
   showFeedback();
+  renderTimer();
   updateProgress();
   renderTabs();
   el.nextButton.focus();
+}
+
+// 한 문제의 득점 내역을 계산한다. 맞히면 콤보가 이어지고, 틀리거나 시간이 지나면 끊긴다.
+function scoreAnswer(q, correct, ms, hintUsed) {
+  if (!correct) {
+    state.combo = 0;
+    return { ms, total: 0, items: [] };
+  }
+  state.combo += 1;
+  state.maxCombo = Math.max(state.maxCombo, state.combo);
+
+  const items = [{ kind: "base", label: difficultyLabel(q.difficulty), points: BASE_POINTS * DIFFICULTIES[q.difficulty].multiplier }];
+  if (ms < FAST_ANSWER_MS) items.push({ kind: "fast", label: `${FAST_ANSWER_MS / 1000}초 안에`, points: FAST_BONUS });
+  if (!hintUsed) items.push({ kind: "noHint", label: "힌트 없이", points: NO_HINT_BONUS });
+  if (COMBO_BONUS[state.combo]) items.push({ kind: "combo", label: `${state.combo}연속`, points: COMBO_BONUS[state.combo] });
+
+  items.forEach(({ kind, points }) => {
+    state.breakdown[kind] += points;
+  });
+  return { ms, total: items.reduce((sum, item) => sum + item.points, 0), items };
 }
 
 function showFeedback() {
   const s = currentSession();
   const q = s.queue[s.index];
   const correct = s.picked === q.answer;
+  const timedOut = s.picked === TIMEOUT;
 
   el.choices.forEach((button) => {
     button.disabled = true;
   });
-  el.choices[s.picked].classList.add("is-picked");
+  el.hintButton.disabled = true;
+  if (!timedOut) el.choices[s.picked].classList.add("is-picked");
   markChoice(q.answer, true);
-  if (!correct) markChoice(s.picked, false);
+  if (!correct && !timedOut) markChoice(s.picked, false);
 
-  el.feedbackText.textContent = correct ? "✓ 정답입니다!" : `✗ 오답입니다. 정답은 '${q.choices[q.answer]}'`;
+  if (correct) el.feedbackText.textContent = `✓ 정답입니다! +${s.result.total}점`;
+  else if (timedOut) el.feedbackText.textContent = `⏱ 시간 초과! 정답은 '${q.choices[q.answer]}'`;
+  else el.feedbackText.textContent = `✗ 오답입니다. 정답은 '${q.choices[q.answer]}'`;
+  el.points.textContent = s.result.items.map(({ label, points }) => `${label} +${points}`).join(" · ");
+  el.points.hidden = !correct;
   el.explanation.textContent = q.explanation;
   el.feedback.classList.add(correct ? "is-correct" : "is-wrong");
   el.feedback.hidden = false;
@@ -525,8 +658,7 @@ function nextQuestion() {
   if (currentScreen !== "quiz" || transitionTimer || s.picked === null) return;
 
   if (s.index < s.queue.length - 1) {
-    s.index += 1;
-    s.picked = null;
+    Object.assign(s, { index: s.index + 1, picked: null, removed: null, spentMs: 0, shownAt: null, result: null });
     renderQuestion();
     return;
   }
@@ -542,7 +674,7 @@ function nextQuestion() {
 // 과목이 끝나면 그 과목 점수를 잠깐 보여주고 다음 과목으로 넘어간다. (F-11)
 function showTransition(session, nextIndex) {
   el.quizBody.hidden = true;
-  el.transitionText.textContent = `${session.name} ${session.score} / ${session.queue.length}`;
+  el.transitionText.textContent = `${session.name} ${session.correct} / ${session.queue.length}`;
   el.transition.hidden = false;
   transitionShownAt = Date.now();
 
@@ -564,13 +696,18 @@ function endTransition() {
 }
 
 // 중간에 그만두기. 푼 문제가 있으면 확인을 받고 지금까지의 결과를 보여준다.
+// 확인 창이 떠 있는 동안에는 문제 시간을 멈춘다.
 function quitGame() {
   if (currentScreen !== "quiz") return;
+  pauseQuestionTimer();
   if (answeredQuestions().length === 0) {
     goHome();
     return;
   }
-  if (!confirm("벌써 무대를 떠나시려고요? 지금까지 푼 문제로 결과를 보여 드릴게요!")) return;
+  if (!confirm("벌써 무대를 떠나시려고요? 지금까지 푼 문제로 결과를 보여 드릴게요!")) {
+    startQuestionTimer();
+    return;
+  }
   if (transitionTimer) endTransition();
   state.quit = true;
   if (state.endedAt === null) state.endedAt = Date.now();
@@ -579,12 +716,13 @@ function quitGame() {
 
 // ----- 결과 화면 -----
 
-// 모든 과목을 10문제씩 푼 판만 순위표에 기록한다. (문제 수가 다르면 점수를 비교할 수 없음)
+// 끝까지 푼 전체도전·카테고리별·스피드퀴즈 판만 그 모드의 순위표에 기록한다.
 function isRankedGame() {
-  return state.mode === "all" && !state.quit && state.sessions.every((s) => s.queue.length === QUESTIONS_PER_CATEGORY);
+  return Object.hasOwn(MODES, state.mode) && !state.quit;
 }
 
 function finishGame() {
+  pauseQuestionTimer();
   const elapsedSec = Math.round((state.endedAt - state.startedAt) / 1000);
   let rankText;
 
@@ -599,7 +737,12 @@ function finishGame() {
     const now = new Date();
     const record = {
       id: String(now.getTime()),
+      mode: state.mode,
+      category: state.category,
       score: totalScore(),
+      correct: totalCorrect(),
+      total: totalQuestions(),
+      maxCombo: state.maxCombo,
       categoryScores: { ...state.categoryScores },
       elapsedSec,
       playedAt: toLocalISOString(now)
@@ -607,14 +750,13 @@ function finishGame() {
     const records = loadRecords();
     records.push(record);
     writeStorage(RECORDS_KEY, records);
-    sortRecords(records);
+    const board = sortRecords(records.filter((r) => r.mode === state.mode));
     lastRecordId = record.id;
-    const rank = records.indexOf(record) + 1;
-    rankText = `전체 ${records.length}개 기록 중 ${rank}위! ${rank === 1 ? "오늘의 챔피언 탄생입니다!" : "큰 박수 부탁드립니다!"}`;
-  } else if (state.mode === "review") {
-    rankText = "복습 무대는 순위표에 기록되지 않아요! 그래도 실력은 확실히 늘었죠?!";
+    rankingMode = state.mode;
+    const rank = board.indexOf(record) + 1;
+    rankText = `${MODES[state.mode].label} ${board.length}개 기록 중 ${rank}위! ${rank === 1 ? "오늘의 챔피언 탄생입니다!" : "큰 박수 부탁드립니다!"}`;
   } else {
-    rankText = `모든 과목을 ${QUESTIONS_PER_CATEGORY}문제씩 풀어야 순위표에 오를 수 있어요! 다음엔 풀코스에 도전해 볼까요?!`;
+    rankText = "복습 무대는 순위표에 기록되지 않아요! 그래도 실력은 확실히 늘었죠?!";
   }
 
   renderResult(elapsedSec, rankText);
@@ -622,15 +764,35 @@ function finishGame() {
   el.resultTitle.focus();
 }
 
+function resultTitle() {
+  if (state.mode === "category") return `${MODES.category.name} · ${categoryName(state.category)}`;
+  if (state.mode === "review") return "WRONG ANSWERS";
+  return MODES[state.mode].name;
+}
+
 function renderResult(elapsedSec, rankText) {
-  const score = totalScore();
+  const correct = totalCorrect();
   const total = answeredQuestions().length;
-  el.resultScore.textContent = `${score} / ${total}`;
-  el.resultPercent.textContent = `(${Math.round((score / total) * 100)}점)`;
+  el.resultTitle.textContent = resultTitle();
+  el.resultScore.textContent = `${totalScore()}점`;
+  el.resultPercent.textContent = `(${correct} / ${total} 정답 · ${Math.round((correct / total) * 100)}%)`;
 
   el.resultCategories.replaceChildren(...CATEGORIES.filter(({ key }) => state.categoryTotals[key]).map(({ key, name }) => {
     const li = document.createElement("li");
     li.append(textEl("span", name), textEl("span", `${state.categoryScores[key]} / ${state.categoryTotals[key]}`));
+    return li;
+  }));
+
+  const { base, fast, noHint, combo } = state.breakdown;
+  el.resultBreakdown.replaceChildren(...[
+    ["기본 점수 (난이도 배수)", `${base}점`],
+    ["시간 보너스", `${fast}점`],
+    ["힌트 미사용 보너스", `${noHint}점`],
+    ["콤보 보너스", `${combo}점`],
+    ["최고 콤보", `${state.maxCombo}연속`]
+  ].map(([label, value]) => {
+    const li = document.createElement("li");
+    li.append(textEl("span", label), textEl("span", value));
     return li;
   }));
 
@@ -702,13 +864,44 @@ function showRanking() {
   el.rankingTitle.focus();
 }
 
+function selectRankingMode(mode) {
+  rankingMode = mode;
+  renderRanking();
+}
+
+function renderRankingTabs() {
+  el.rankingTabs.replaceChildren(...Object.entries(MODES).map(([mode, { name, label }]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "subject-tab";
+    button.append(textEl("span", name, "subject-tab-name"), textEl("span", label, "subject-tab-progress"));
+    button.setAttribute("aria-pressed", String(mode === rankingMode));
+    button.addEventListener("click", () => selectRankingMode(mode));
+    return button;
+  }));
+}
+
 function renderRanking() {
-  const records = sortRecords(loadRecords());
+  renderRankingTabs();
+  el.rankingRule.textContent = MODES[rankingMode].rule;
+
+  // 카테고리별 순위표에는 어느 과목 기록인지 함께 보여준다.
+  const showSubject = rankingMode === "category";
+  const headers = ["RANK", ...(showSubject ? ["SUBJECT"] : []), "SCORE", "CORRECT", "TIME", "DATE"];
+  const headRow = document.createElement("tr");
+  headRow.append(...headers.map((h) => {
+    const th = textEl("th", h);
+    th.scope = "col";
+    return th;
+  }));
+  el.rankingHead.replaceChildren(headRow);
+
+  const records = sortRecords(loadRecords().filter((r) => r.mode === rankingMode));
   const top = records.slice(0, RANKING_SIZE);
 
   if (top.length === 0) {
     const td = textEl("td", "아직 아무도 무대에 오르지 않았어요! 첫 번째 주인공이 되어 보세요!", "empty");
-    td.colSpan = 4;
+    td.colSpan = headers.length;
     const tr = document.createElement("tr");
     tr.append(td);
     el.rankingBody.replaceChildren(tr);
@@ -721,9 +914,11 @@ function renderRanking() {
         tr.setAttribute("aria-current", "true");
         rank.append(textEl("span", "NEW", "current-tag"));
       }
+      tr.append(rank);
+      if (showSubject) tr.append(textEl("td", categoryOf(r.category) ? categoryName(r.category) : "-"));
       tr.append(
-        rank,
         textEl("td", `${r.score}`),
+        textEl("td", `${r.correct}/${r.total}`),
         textEl("td", formatTime(r.elapsedSec)),
         textEl("td", r.playedAt.slice(0, 10).replace(/-/g, "."))
       );
@@ -739,15 +934,10 @@ function renderRanking() {
   el.resetButton.disabled = records.length === 0;
 }
 
-// 확인 창을 거쳐 전체 기록 삭제 (F-13)
+// 확인 창을 거쳐 지금 보고 있는 모드의 기록을 모두 삭제 (F-13)
 function resetRecords() {
-  if (!confirm("정말 모든 기록을 지울까요? 한 번 지우면 되돌릴 수 없어요!")) return;
-  try {
-    localStorage.removeItem(RECORDS_KEY);
-  } catch (error) {
-    console.error("기록을 삭제하지 못했습니다.", error);
-  }
-  lastRecordId = null;
+  if (!confirm(`정말 ${MODES[rankingMode].label} 기록을 모두 지울까요? 한 번 지우면 되돌릴 수 없어요!`)) return;
+  writeStorage(RECORDS_KEY, loadRecords().filter((r) => r.mode !== rankingMode));
   renderRanking();
 }
 
@@ -765,21 +955,9 @@ function goTo(screen) {
 // ----- 이벤트 -----
 
 el.navTabs.forEach((tab) => tab.addEventListener("click", () => goTo(tab.dataset.screen)));
-el.countSlider.addEventListener("input", () => setCount(selectedSubject, Number(el.countSlider.value)));
-el.countDisplay.addEventListener("click", openCountInput);
-el.countInput.addEventListener("blur", () => closeCountInput(true));
-el.countInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    closeCountInput(true);
-    el.countDisplay.focus();
-  } else if (event.key === "Escape") {
-    closeCountInput(false);
-    el.countDisplay.focus();
-  }
-});
-el.subjectStartButton.addEventListener("click", startSubject);
 el.allStartButton.addEventListener("click", startAll);
+el.speedStartButton.addEventListener("click", startSpeed);
+el.hintButton.addEventListener("click", useHint);
 el.choices.forEach((button) => {
   button.addEventListener("click", () => selectChoice(Number(button.dataset.index)));
 });
@@ -811,9 +989,7 @@ document.addEventListener("keydown", (event) => {
 const dataValid = validateQuestions();
 if (dataValid) {
   questionById = new Map(Object.values(QUESTIONS).flat().map((q) => [q.id, q]));
-  counts = Object.fromEntries(CATEGORIES.map(({ key }) => [key, Math.min(QUESTIONS_PER_CATEGORY, QUESTIONS[key].length)]));
   renderSubjectButtons();
-  renderCount();
 }
 updateStartButtons();
 showScreen("start");

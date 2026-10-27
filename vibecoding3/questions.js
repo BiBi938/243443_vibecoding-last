@@ -1,9 +1,11 @@
 // 문제 데이터. answer는 셔플 전 choices 배열의 인덱스(0~3)다.
+// difficulty는 "easy" | "medium" | "hard"이며 점수 배수(1 / 1.5 / 2)를 정한다.
 const QUESTIONS = {
   // 한국사는 시대순으로 출제한다. year(사건 연도)로 정렬하고, 같은 해는 id 순서를 따른다.
   history: [
     {
       id: "h01",
+      difficulty: "hard",
       year: 372,
       question: "삼국 가운데 가장 먼저 불교를 공식적으로 받아들인 나라는?",
       choices: ["고구려", "백제", "신라", "발해"],
@@ -12,6 +14,7 @@ const QUESTIONS = {
     },
     {
       id: "h02",
+      difficulty: "hard",
       year: 538,
       question: "백제가 멸망할 때까지 마지막 도읍으로 삼은 곳은?",
       choices: ["한성", "웅진", "사비", "평양"],
@@ -20,6 +23,7 @@ const QUESTIONS = {
     },
     {
       id: "h03",
+      difficulty: "easy",
       year: 918,
       question: "918년에 고려를 세운 인물은?",
       choices: ["왕건", "이성계", "궁예", "견훤"],
@@ -28,6 +32,7 @@ const QUESTIONS = {
     },
     {
       id: "h04",
+      difficulty: "medium",
       year: 1377,
       question: "현존하는 세계에서 가장 오래된 금속 활자본은?",
       choices: ["삼국사기", "팔만대장경", "무구정광대다라니경", "직지심체요절"],
@@ -36,6 +41,7 @@ const QUESTIONS = {
     },
     {
       id: "h05",
+      difficulty: "medium",
       year: 1394,
       question: "조선을 세운 뒤 처음으로 도읍을 한양으로 옮긴 왕은?",
       choices: ["세종", "세조", "태조", "성종"],
@@ -44,6 +50,7 @@ const QUESTIONS = {
     },
     {
       id: "h06",
+      difficulty: "easy",
       year: 1446,
       question: "훈민정음을 반포한 조선의 왕은?",
       choices: ["태조", "세종", "정조", "영조"],
@@ -52,6 +59,7 @@ const QUESTIONS = {
     },
     {
       id: "h07",
+      difficulty: "easy",
       year: 1592,
       question: "임진왜란 때 한산도 대첩에서 학익진으로 일본 수군을 크게 무찌른 장수는?",
       choices: ["권율", "김시민", "이순신", "곽재우"],
@@ -60,6 +68,7 @@ const QUESTIONS = {
     },
     {
       id: "h08",
+      difficulty: "medium",
       year: 1796,
       question: "수원 화성을 쌓도록 한 조선의 왕은?",
       choices: ["영조", "정조", "숙종", "순조"],
@@ -68,6 +77,7 @@ const QUESTIONS = {
     },
     {
       id: "h09",
+      difficulty: "easy",
       year: 1919,
       question: "3·1 운동이 일어난 해는?",
       choices: ["1910년", "1919년", "1929년", "1945년"],
@@ -76,6 +86,7 @@ const QUESTIONS = {
     },
     {
       id: "h10",
+      difficulty: "hard",
       year: 1919,
       question: "1919년 대한민국 임시 정부가 처음 수립된 도시는?",
       choices: ["베이징", "상하이", "도쿄", "충칭"],
@@ -86,6 +97,7 @@ const QUESTIONS = {
   science: [
     {
       id: "s01",
+      difficulty: "easy",
       question: "물의 화학식은?",
       choices: ["H₂O", "CO₂", "O₂", "NaCl"],
       answer: 0,
@@ -93,6 +105,7 @@ const QUESTIONS = {
     },
     {
       id: "s02",
+      difficulty: "easy",
       question: "태양계에서 가장 큰 행성은?",
       choices: ["토성", "목성", "천왕성", "해왕성"],
       answer: 1,
@@ -100,6 +113,7 @@ const QUESTIONS = {
     },
     {
       id: "s03",
+      difficulty: "medium",
       question: "식물이 빛 에너지를 이용해 양분을 만드는 과정은?",
       choices: ["호흡", "증산 작용", "광합성", "발효"],
       answer: 2,
@@ -107,6 +121,7 @@ const QUESTIONS = {
     },
     {
       id: "s04",
+      difficulty: "easy",
       question: "1기압에서 순수한 물이 끓는 온도는?",
       choices: ["90℃", "100℃", "110℃", "120℃"],
       answer: 1,
@@ -114,6 +129,7 @@ const QUESTIONS = {
     },
     {
       id: "s05",
+      difficulty: "hard",
       question: "혈액에서 산소를 운반하는 세포는?",
       choices: ["백혈구", "혈소판", "적혈구", "림프구"],
       answer: 2,
@@ -121,6 +137,7 @@ const QUESTIONS = {
     },
     {
       id: "s06",
+      difficulty: "medium",
       question: "원소 기호 Fe가 나타내는 원소는?",
       choices: ["철", "불소", "금", "납"],
       answer: 0,
@@ -128,6 +145,7 @@ const QUESTIONS = {
     },
     {
       id: "s07",
+      difficulty: "medium",
       question: "지구가 태양 주위를 한 바퀴 도는 데 걸리는 시간은 약 얼마인가?",
       choices: ["하루", "1년", "한 달", "10년"],
       answer: 1,
@@ -135,6 +153,7 @@ const QUESTIONS = {
     },
     {
       id: "s08",
+      difficulty: "hard",
       question: "다음 중 소리가 전달되지 않는 곳은?",
       choices: ["물", "공기", "철", "진공"],
       answer: 3,
@@ -142,6 +161,7 @@ const QUESTIONS = {
     },
     {
       id: "s09",
+      difficulty: "easy",
       question: "만유인력의 법칙을 정리한 과학자는?",
       choices: ["갈릴레이", "아인슈타인", "뉴턴", "케플러"],
       answer: 2,
@@ -149,6 +169,7 @@ const QUESTIONS = {
     },
     {
       id: "s10",
+      difficulty: "hard",
       question: "다음 중 빛의 삼원색이 아닌 것은?",
       choices: ["빨강", "초록", "파랑", "노랑"],
       answer: 3,
@@ -158,6 +179,7 @@ const QUESTIONS = {
   geography: [
     {
       id: "g01",
+      difficulty: "easy",
       question: "세계에서 가장 넓은 대양은?",
       choices: ["대서양", "인도양", "태평양", "북극해"],
       answer: 2,
@@ -165,6 +187,7 @@ const QUESTIONS = {
     },
     {
       id: "g02",
+      difficulty: "easy",
       question: "남한에서 가장 높은 산은?",
       choices: ["한라산", "지리산", "설악산", "태백산"],
       answer: 0,
@@ -172,6 +195,7 @@ const QUESTIONS = {
     },
     {
       id: "g03",
+      difficulty: "easy",
       question: "해발 고도(해수면 기준 높이)가 세계에서 가장 높은 산은?",
       choices: ["K2", "에베레스트산", "킬리만자로산", "몽블랑"],
       answer: 1,
@@ -179,6 +203,7 @@ const QUESTIONS = {
     },
     {
       id: "g04",
+      difficulty: "medium",
       question: "오스트레일리아(호주)의 수도는?",
       choices: ["시드니", "멜버른", "캔버라", "퍼스"],
       answer: 2,
@@ -186,6 +211,7 @@ const QUESTIONS = {
     },
     {
       id: "g05",
+      difficulty: "medium",
       question: "이집트를 지나 지중해로 흘러드는 강은?",
       choices: ["나일강", "아마존강", "콩고강", "니제르강"],
       answer: 0,
@@ -193,6 +219,7 @@ const QUESTIONS = {
     },
     {
       id: "g06",
+      difficulty: "hard",
       question: "남한에서 가장 긴 강은?",
       choices: ["한강", "낙동강", "금강", "영산강"],
       answer: 1,
@@ -200,6 +227,7 @@ const QUESTIONS = {
     },
     {
       id: "g07",
+      difficulty: "medium",
       question: "다음 중 남아메리카 대륙에 있는 나라는?",
       choices: ["멕시코", "쿠바", "아르헨티나", "포르투갈"],
       answer: 2,
@@ -207,6 +235,7 @@ const QUESTIONS = {
     },
     {
       id: "g08",
+      difficulty: "hard",
       question: "1884년 국제 회의에서 경도 0°의 기준으로 정한 본초 자오선이 지나는 도시는?",
       choices: ["파리", "런던", "로마", "뉴욕"],
       answer: 1,
@@ -214,6 +243,7 @@ const QUESTIONS = {
     },
     {
       id: "g09",
+      difficulty: "easy",
       question: "세계에서 면적이 가장 넓은 나라는?",
       choices: ["캐나다", "중국", "미국", "러시아"],
       answer: 3,
@@ -221,6 +251,7 @@ const QUESTIONS = {
     },
     {
       id: "g10",
+      difficulty: "hard",
       question: "대륙으로 분류되는 오스트레일리아를 제외하고, 세계에서 가장 큰 섬은?",
       choices: ["그린란드", "마다가스카르섬", "보르네오섬", "뉴기니섬"],
       answer: 0,
@@ -230,6 +261,7 @@ const QUESTIONS = {
   general: [
     {
       id: "n01",
+      difficulty: "easy",
       question: "올림픽 오륜기에 그려진 고리는 몇 개인가?",
       choices: ["3개", "4개", "5개", "6개"],
       answer: 2,
@@ -237,6 +269,7 @@ const QUESTIONS = {
     },
     {
       id: "n02",
+      difficulty: "medium",
       question: "북반구에서 1년 중 낮이 가장 긴 절기는?",
       choices: ["춘분", "하지", "추분", "동지"],
       answer: 1,
@@ -244,6 +277,7 @@ const QUESTIONS = {
     },
     {
       id: "n03",
+      difficulty: "medium",
       question: "레오나르도 다빈치가 그린 작품은?",
       choices: ["모나리자", "별이 빛나는 밤", "절규", "게르니카"],
       answer: 0,
@@ -251,6 +285,7 @@ const QUESTIONS = {
     },
     {
       id: "n04",
+      difficulty: "easy",
       question: "축구 경기에서 한 팀이 동시에 경기장에 내보내는 선수는 골키퍼를 포함해 몇 명인가?",
       choices: ["9명", "10명", "11명", "12명"],
       answer: 2,
@@ -258,6 +293,7 @@ const QUESTIONS = {
     },
     {
       id: "n05",
+      difficulty: "easy",
       question: "『로미오와 줄리엣』을 쓴 작가는?",
       choices: ["괴테", "셰익스피어", "톨스토이", "디킨스"],
       answer: 1,
@@ -265,6 +301,7 @@ const QUESTIONS = {
     },
     {
       id: "n06",
+      difficulty: "hard",
       question: "한글 맞춤법에서 정한 기본 자모 24자 가운데 자음은 몇 개인가?",
       choices: ["10개", "14개", "19개", "24개"],
       answer: 1,
@@ -272,6 +309,7 @@ const QUESTIONS = {
     },
     {
       id: "n07",
+      difficulty: "hard",
       question: "표준 피아노의 건반은 모두 몇 개인가?",
       choices: ["66개", "76개", "88개", "96개"],
       answer: 2,
@@ -279,6 +317,7 @@ const QUESTIONS = {
     },
     {
       id: "n08",
+      difficulty: "easy",
       question: "윤년의 2월은 며칠까지 있는가?",
       choices: ["29일", "28일", "30일", "31일"],
       answer: 0,
@@ -286,6 +325,7 @@ const QUESTIONS = {
     },
     {
       id: "n09",
+      difficulty: "medium",
       question: "'운명'이라는 별칭으로 알려진 교향곡 제5번의 작곡가는?",
       choices: ["모차르트", "바흐", "쇼팽", "베토벤"],
       answer: 3,
@@ -293,6 +333,7 @@ const QUESTIONS = {
     },
     {
       id: "n10",
+      difficulty: "hard",
       question: "일반적인 정육면체 주사위에서 서로 마주 보는 두 면의 눈을 더하면?",
       choices: ["5", "6", "7", "8"],
       answer: 2,
